@@ -26,6 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import db
+from .calendar_acceptance_filter import is_calendar_acceptance_notification
 from .pipeline import CATEGORIES, process_email
 
 logger = logging.getLogger("fellowship_console")
@@ -901,6 +902,8 @@ async def api_process_email(request: Request):
     elif any(p in fe for p in _NO_REPLY_SENDER_PATTERNS):
         skip_reason = "no_reply_sender"
     elif any(m in sub for m in _AUTOMATED_SUBJECT_MARKERS):
+        skip_reason = "automated_subject"
+    elif is_calendar_acceptance_notification(subject, body):
         skip_reason = "automated_subject"
     if skip_reason:
         return JSONResponse(
